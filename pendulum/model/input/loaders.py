@@ -6,7 +6,6 @@ from pendulum.model import Pendulum, PendulumState
 from pendulum.model.pendulum_schema import PendulumChain
 from pendulum.model.state_schema import PendulumStateChain
 import pendulum.model.input.pendulum_state_schema as pws
-from pendulum.model.input.times_schema import Times
 
 
 def load_pendulum_file(path: Union[str, Path]) -> List[Pendulum]:
@@ -48,5 +47,4 @@ def load_frame(path: Union[str, Path]) -> Tuple[List[Pendulum], List[PendulumSta
 
 
 def load_times_file(path: Union[str, Path]) -> np.ndarray:
-    t = Times.parse_file(path).times
-    return np.array(t)
+    return np.loadtxt(path)
