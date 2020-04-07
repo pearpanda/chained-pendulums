@@ -37,7 +37,7 @@ class Model:
         frame = mechanics.ReferenceFrame('Oxy')
         origin = mechanics.Point('O')
         # The origin is fixed in the reference frame
-        origin.set_vel(frame, 0 * frame.x + 0 * frame.y)
+        origin.set_vel(frame, 0 * frame.x + 0 * frame.x)
 
         particles = []
         forces = []
@@ -49,7 +49,7 @@ class Model:
             local = frame.orientnew('A{0}'.format(i),
                                     rot_type='axis', amounts=[theta[i], frame.z])
             pendulum = pivot.locatenew('P{0}'.format(i),
-                                       lengths[i] * local.y)
+                                       lengths[i] * local.x)
 
             # Instead of rotating the pendulum,
             # we'll fix the pivot (origin or previous pendulum) and the
@@ -63,7 +63,7 @@ class Model:
             particles.append(particle)
             kinematic_odes.append(d_theta[i] - omega[i])
 
-            gravity = masses[i] * g * frame.y
+            gravity = masses[i] * g * frame.x
             forces.append((pendulum, gravity))
 
             # We set the pivot for the next pendulum as the current pendulum

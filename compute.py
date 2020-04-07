@@ -1,33 +1,34 @@
+from typing import List
 from pydantic import ValidationError
 import numpy as np
 import matplotlib.pyplot as plt
 
 from pendulum.model.input import loaders
 from pendulum.physics import Model, ODEs, Solver
-from pendulum.model.result import Result, PendulumPositions
+from pendulum.model.result import Result, PendulumStats
+from pendulum.model import Pendulum, PendulumState
 
 
-def main():
-    # TODO: Add prompts to these input statements
-    file_path = input()
-    time_path = input()
-    out_path = input()
-    try:
-        pendulums, initial_states = loaders.load_frame(file_path)
-        model = Model(len(pendulums))
-        solver = Solver(ODEs(model), pendulums, initial_states)
+def compute(pendulums: List[Pendulum], initial_states: List[PendulumState],
+            times: np.ndarray):
+    odes = ODEs(Model(len(pendulums)))
+    solver = Solver(odes, pendulums, initial_states)
 
-        times = loaders.load_times_file(time_path)
-
-        result = Result(solver, times, pendulums)
-        positions = PendulumPositions(result)
-        plt.plot(positions.x_coords, positions.y_coords)
-        plt.show()
-
-    except ValidationError as e:
-        print(e)
+    result = solver.solve(times)
+    return result
 
 
 if __name__ == '__main__':
     # TODO: Check whether command line arguments can be passed
-    main()
+    file_path = input()
+    time_path = input()
+    out_path = input()
+    try:
+        ps, iss = loaders.load_frame(file_path)
+        ts = loaders.load_times_file(time_path)
+        out = compute(ps, iss, ts)
+        out.save(out_path)
+
+    except ValidationError as e:
+        print(e)
+

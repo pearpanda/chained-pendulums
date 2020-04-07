@@ -1,8 +1,8 @@
-from typing import Iterable
+from typing import List
 import numpy as np
 from scipy.integrate import odeint
 
-from pendulum.model import Pendulum, PendulumState
+from pendulum.model import Pendulum, PendulumState, Result
 from pendulum.physics.odes import ODEs, gradient
 
 
@@ -10,10 +10,11 @@ class Solver:
     odes: ODEs
 
     def __init__(self, odes: ODEs,
-                 pendulums: Iterable[Pendulum],
-                 initial_states: Iterable[PendulumState],
+                 pendulums: List[Pendulum],
+                 initial_states: List[PendulumState],
                  g=9.81):
         self.odes = odes
+        self.pendulums = pendulums
 
         masses = []
         lengths = []
@@ -29,5 +30,9 @@ class Solver:
         self.initial = np.array(initial_angles + initial_velocities)
 
     def solve(self, times: np.ndarray):
-        return odeint(gradient, self.initial,
-                      times, args=(self.odes, self.parameters), tfirst=True)
+        solved_odes = odeint(gradient, self.initial,
+                             times, args=(self.odes, self.parameters),
+                             tfirst=True)
+        angles = solved_odes[:, 0:len(self.pendulums)].T
+        velocities = solved_odes[:, len(self.pendulums) + 1: 2 * len(self.pendulums)].T
+        return Result(angles, velocities, times, self.pendulums)
