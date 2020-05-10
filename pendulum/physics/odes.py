@@ -1,7 +1,6 @@
 from typing import Callable
 import sympy as sym
 import numpy as np
-import scipy as sp
 
 from pendulum.physics.model import Model
 
@@ -27,8 +26,12 @@ class ODEs:
         self.fo_func = sym.lambdify(unknowns + parameters,
                                     fo_full_symbols)
 
+    def __call__(self, t: np.ndarray, y: np.ndarray, *args, **kwargs):
+        inputs = np.concatenate((y, *args))
+        sol = np.linalg.solve(self.mm_func(*inputs), self.fo_func(*inputs))
+        return np.array(sol).T[0]
 
-def gradient(t: np.ndarray, y: np.ndarray, odes: ODEs, args):
-    inputs = np.concatenate((y, args))
-    sol = np.linalg.solve(odes.mm_func(*inputs), odes.fo_func(*inputs))
-    return np.array(sol).T[0]
+
+def generate_odes(pendulum_count: int):
+    odes = ODEs(Model(pendulum_count))
+    return odes

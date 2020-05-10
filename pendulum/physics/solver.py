@@ -1,38 +1,30 @@
-from typing import List
+from typing import List, Callable
 import numpy as np
 from scipy.integrate import odeint
 
-from pendulum.model import Pendulum, PendulumState, Result
-from pendulum.physics.odes import ODEs, gradient
+from pendulum.io import Result
 
 
 class Solver:
-    odes: ODEs
+    odes: Callable
 
-    def __init__(self, odes: ODEs,
-                 pendulums: List[Pendulum],
-                 initial_states: List[PendulumState],
+    def __init__(self, odes: Callable,
+                 masses: np.ndarray,
+                 lengths: np.ndarray,
+                 initial_angles: np.ndarray,
+                 initial_velocities: np.ndarray,
                  g=9.81):
         self.odes = odes
-        self.pendulums = pendulums
+        self.pendulum_count = len(masses)
+        self.lengths = lengths
 
-        masses = []
-        lengths = []
-        initial_angles = []
-        initial_velocities = []
-        for pend, state in zip(pendulums, initial_states):
-            masses.append(pend.mass)
-            lengths.append(pend.length)
-            initial_angles.append(state.angle)
-            initial_velocities.append(state.angular_velocity)
-
-        self.parameters = np.array([g] + masses + lengths)
-        self.initial = np.array(initial_angles + initial_velocities)
+        self.parameters = np.concatenate((np.array([g]), masses, lengths))
+        self.initial = np.concatenate((initial_angles, initial_velocities))
 
     def solve(self, times: np.ndarray):
-        solved_odes = odeint(gradient, self.initial,
-                             times, args=(self.odes, self.parameters),
+        solved_odes = odeint(self.odes, self.initial,
+                             times, args=(self.parameters,),
                              tfirst=True)
-        angles = solved_odes[:, 0:len(self.pendulums)].T
-        velocities = solved_odes[:, len(self.pendulums) + 1: 2 * len(self.pendulums)].T
-        return Result(angles, velocities, times, self.pendulums)
+        angles = solved_odes[:, 0:self.pendulum_count].T
+        velocities = solved_odes[:, self.pendulum_count + 1: 2 * self.pendulum_count].T
+        return Result(angles, velocities, times, self.lengths)
