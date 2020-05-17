@@ -115,7 +115,7 @@ class SingleAnimator:
         self.pendulum_line.set_data(current_line_x, current_line_y)
         if self.trails:
             return [self.pendulum_line, *self.trail_lines]
-        return self.pendulum_line
+        return self.pendulum_line,
 
 
 def generate_animation(results: Union[Result, List[Result]], multi=False, show=True, trails=False, **kwargs):
