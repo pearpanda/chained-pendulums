@@ -8,6 +8,7 @@ import numpy as np
 from pendulum.io.result import Result
 from pendulum.io import loaders
 
+
 class MultiAnimator:
     def __init__(self, results: List[Result], ax: Axes, ball_radius, line_width, **kwargs):
         self.parallel_count = len(results)
