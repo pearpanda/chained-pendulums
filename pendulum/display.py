@@ -1,12 +1,10 @@
 from typing import Union, List
-from pathlib import Path
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import Axes
 import matplotlib.animation as animation
 import numpy as np
 
 from pendulum.io.result import Result
-from pendulum.io import loaders
 
 
 class MultiAnimator:
@@ -94,11 +92,12 @@ class SingleAnimator:
 
         if self.trails:
             to_remove = 0
-            t_past = self.t[self.trail_index]
-            while t_now - t_past > self.trail_duration:
-                to_remove += 1
-                self.trail_index += 1
+            if self.trail_duration >= 0.0:
                 t_past = self.t[self.trail_index]
+                while t_now - t_past > self.trail_duration:
+                    to_remove += 1
+                    self.trail_index += 1
+                    t_past = self.t[self.trail_index]
 
             for k in range(self.n):
                 for j in range(to_remove):
@@ -128,8 +127,8 @@ def generate_animation(results: Union[Result, List[Result]], multi=False, show=T
     canvas_radius = total_length + ball_radius + empty_space
     lims = (-canvas_radius, canvas_radius)
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111, autoscale_on=False, xlim=lims, ylim=lims)
+    fig = kwargs.get("figure", plt.figure())
+    ax = kwargs.get("axes", fig.add_subplot(111, autoscale_on=False, xlim=lims, ylim=lims))
     ax.set_aspect('equal')
     ax.grid()
 
