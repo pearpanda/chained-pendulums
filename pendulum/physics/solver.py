@@ -26,5 +26,5 @@ class Solver:
                              times, args=(self.parameters,),
                              tfirst=True)
         angles = solved_odes[:, 0:self.pendulum_count].T
-        velocities = solved_odes[:, self.pendulum_count + 1: 2 * self.pendulum_count].T
+        velocities = solved_odes[:, self.pendulum_count::].T
         return Result(angles, velocities, times, self.lengths)
